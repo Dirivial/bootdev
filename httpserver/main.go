@@ -10,6 +10,14 @@ func main() {
 
 	serveMux := http.NewServeMux()
 
+	fileServer := http.FileServer(http.Dir("./html/"))
+
+	serveMux.Handle("/", fileServer)
+
+	assetsServer := http.FileServer(http.Dir("./html/assets"))
+
+	serveMux.Handle("/assets", assetsServer)
+
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: serveMux,
