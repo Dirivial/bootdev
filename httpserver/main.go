@@ -2,26 +2,30 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
 func main() {
-	fmt.Print("Starting server")
 
 	serveMux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./html/"))
+	fileServer := http.FileServer(http.Dir("./html"))
 
-	serveMux.Handle("/", fileServer)
+	serveMux.Handle("/app/", http.StripPrefix("/app", fileServer))
 
-	assetsServer := http.FileServer(http.Dir("./html/assets"))
+	serveMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
 
-	serveMux.Handle("/assets", assetsServer)
+		w.Write([]byte("OK"))
+	})
 
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: serveMux,
 	}
 
-	server.ListenAndServe()
+	fmt.Print("Starting server")
+	log.Fatal(server.ListenAndServe())
 }
