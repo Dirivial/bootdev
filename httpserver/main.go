@@ -40,15 +40,15 @@ func main() {
 
 	serveMux.Handle("/app/", c.IncFileServerHits(fileServer))
 
-	serveMux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+	serveMux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 
 		w.Write([]byte("OK"))
 	})
 
-	serveMux.HandleFunc("GET /metrics", c.HandleMetrics)
-	serveMux.HandleFunc("POST /reset", c.HandleReset)
+	serveMux.HandleFunc("GET /api/metrics", c.HandleMetrics)
+	serveMux.HandleFunc("POST /api/reset", c.HandleReset)
 
 	server := http.Server{
 		Addr:    ":8080",
