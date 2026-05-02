@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 )
 
@@ -48,6 +49,20 @@ func writeError(w http.ResponseWriter, status int, message string) {
 	w.Write(dat)
 }
 
+func CleanChirp(chirp string) string {
+	badWords := []string{"kerfuffle", "sharbert", "fornax"}
+	words := strings.Split(chirp, " ")
+	for i, word := range words {
+		for _, badWord := range badWords {
+			if strings.ToLower(word) == badWord {
+				words[i] = "****"
+			}
+		}
+	}
+	chirp = strings.Join(words, " ")
+	return chirp
+}
+
 func (c *apiConfig) HandleValidateChirp(w http.ResponseWriter, r *http.Request) {
 	type Chirp struct {
 		Body string `json:"body"`
@@ -77,9 +92,9 @@ func (c *apiConfig) HandleValidateChirp(w http.ResponseWriter, r *http.Request) 
 	}
 
 	type ValidResponse struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}
-	validResponse := ValidResponse{true}
+	validResponse := ValidResponse{CleanChirp(chirp.Body)}
 	dat, err := json.Marshal(validResponse)
 	if err != nil {
 		log.Printf("Error marshalling JSON response: %s", err)
