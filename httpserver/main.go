@@ -21,9 +21,15 @@ func (c *apiConfig) IncFileServerHits(next http.Handler) http.Handler {
 }
 
 func (c *apiConfig) HandleMetrics(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Add("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Hits: %d\n", c.fileServerHits.Load())
+	template := `<html>
+	<body>
+		<h1>Welcome, Chirpy Admin</h1>
+		<p>Chirpy has been visited %d times!</p>
+	</body>
+</html>`
+	fmt.Fprintf(w, template, c.fileServerHits.Load())
 }
 
 func (c *apiConfig) HandleReset(w http.ResponseWriter, r *http.Request) {
@@ -115,8 +121,10 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./html"))
 	fileServer = http.StripPrefix("/app", fileServer)
 
+	// APP
 	serveMux.Handle("/app/", c.IncFileServerHits(fileServer))
 
+	// API
 	serveMux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
